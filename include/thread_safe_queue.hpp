@@ -107,3 +107,49 @@ std::shared_ptr<T> threadSafeQueue<T>::wait_and_pop_front() {
 	deque.pop_front();
 	return res;
 }
+
+template <typename T>
+bool threadSafeQueue<T>::empty() const {
+	std::lock_guard<std::mutex> lk(mx);
+	return deque.empty();
+}
+
+template <typename T>
+bool threadSafeQueue<T>::try_pop_back(T & val) {
+	std::lock_guard<std::mutex> lk(mx);
+	if (deque.empty())
+		return false;
+	val = deque.pop_back();
+	deque.pop_back();
+	return true;
+}
+
+template <typename T>
+std::shared_ptr<T> threadSafeQueue<T>::try_pop_back() {
+	std::lock_guard<std::mutex> lk(mx);
+	if (deque.empty())
+		return std::shared_ptr<T>();
+	std::shared_ptr<T> res(std::make_shared<T>(deque.back()));
+	deque.pop_back();
+	return res;
+}
+
+template <typename T>
+bool threadSafeQueue<T>::try_pop_front(T & val) {
+	std::lock_guard<std::mutex> lk(mx);
+	if (deque.empty())
+		return false;
+	val = deque.pop_front();
+	deque.pop_front();
+	return true;
+}
+
+template <typename T>
+std::shared_ptr<T> threadSafeQueue<T>::try_pop_front() {
+	std::lock_guard<std::mutex> lk(mx);
+	if (deque.empty())
+		return std::shared_ptr<T>();
+	std::shared_ptr<T> res(std::make_shared<T>(deque.front()));
+	deque.pop_front();
+	return res;
+}
