@@ -21,6 +21,7 @@ class Thread
 			const std::string & name,
 			std::function<void()> funcToExecute
 		);
+		Thread() = delete;
 		Thread(Thread & other) = delete;
 		Thread & operator=(const &Thread) = delete;
 
