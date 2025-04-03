@@ -23,7 +23,7 @@ class Thread
 		);
 		Thread() = delete;
 		Thread(Thread & other) = delete;
-		Thread & operator=(const &Thread) = delete;
+		Thread & operator=(const Thread&) = delete;
 
 	public:
 		void start();
