@@ -23,7 +23,7 @@ class threadSafeQueue
 		void push_back(const T & newVal);
 		void push_front(const T & newVal);
 
-		T pop_back();
+		T pop_back(); // I prefer passing references, but this is a subject requirement
 		T pop_front();
 
 		void wait_and_pop_back(T & val);
