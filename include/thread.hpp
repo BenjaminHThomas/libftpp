@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <thread>
+#include <string>
 
 /*
 	I'm not sure why a thread needs a wrapper,
