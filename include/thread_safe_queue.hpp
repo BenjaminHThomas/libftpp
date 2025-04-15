@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * I don't know why the subject requires a deque and not a queue.
+ * I can't see a thread intentionally getting a task from both ends being useful.
+ */
+
 #include <deque>
 #include <memory>
 #include <mutex>
