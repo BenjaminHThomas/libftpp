@@ -4,12 +4,13 @@
 #include <memory>
 #include <mutex>
 #include <condition_variable>
+#include <stdexcept>
 
 template <typename T>
 class ThreadSafeQueue
 {
 	private:
-		mutable std::mutex mx;
+		mutable std::mutex _mx;
 		std::deque<T> deque;
 		std::condition_variable data_cond;
 
@@ -42,25 +43,28 @@ class ThreadSafeQueue
 
 template <typename T>
 ThreadSafeQueue<T>::ThreadSafeQueue(ThreadSafeQueue & other) {
-	std::lock_guard<std::mutex> lk(other.mx);
+	std::lock_guard<std::mutex> lk(other._mx);
 	deque = other.deque;
 }
 
 template <typename T>
 void ThreadSafeQueue<T>::push_back(const T & newVal) {
-	std::lock_guard<std::mutex> lk(mx);
+	std::lock_guard<std::mutex> lk(_mx);
 	deque.push_back(newVal);
 };
 
 template <typename T>
 void ThreadSafeQueue<T>::push_front(const T & newVal) {
-	std::lock_guard<std::mutex> lk(mx);
+	std::lock_guard<std::mutex> lk(_mx);
 	deque.push_front(newVal);
 }
 
 template <typename T>
 T ThreadSafeQueue<T>::pop_back() {
-	std::lock_guard<std::mutex> lk(mx);
+	std::lock_guard<std::mutex> lk(_mx);
+  if (deque.empty()) {
+    throw std::runtime_error("Attemped to pop empty queue.");
+  }
 	T val = deque.back();
 	deque.pop_back();
 	return val;
@@ -68,7 +72,10 @@ T ThreadSafeQueue<T>::pop_back() {
 
 template <typename T>
 T ThreadSafeQueue<T>::pop_front() {
-	std::lock_guard<std::mutex> lk(mx);
+	std::lock_guard<std::mutex> lk(_mx);
+  if (deque.empty()) {
+    throw std::runtime_error("Attemped to pop empty queue.");
+  }
 	T val = deque.front();
 	deque.pop_front();
 	return val;
@@ -76,7 +83,7 @@ T ThreadSafeQueue<T>::pop_front() {
 
 template <typename T>
 void ThreadSafeQueue<T>::wait_and_pop_back(T & val) {
-	std::unique_lock<std::mutex> lk(mx);
+	std::unique_lock<std::mutex> lk(_mx);
 	data_cond.wait(lk, [this] {return !deque.empty();});
 	val = deque.back();
 	deque.pop_back();
@@ -84,7 +91,7 @@ void ThreadSafeQueue<T>::wait_and_pop_back(T & val) {
 
 template <typename T>
 std::shared_ptr<T> ThreadSafeQueue<T>::wait_and_pop_back() {
-	std::unique_lock<std::mutex> lk(mx);
+	std::unique_lock<std::mutex> lk(_mx);
 	data_cond.wait(lk, [this] {return !deque.empty();});
 	std::shared_ptr<T> res(std::make_shared<T> (deque.back()));
 	deque.pop_back();
@@ -93,7 +100,7 @@ std::shared_ptr<T> ThreadSafeQueue<T>::wait_and_pop_back() {
 
 template <typename T>
 void ThreadSafeQueue<T>::wait_and_pop_front(T & val) {
-	std::unique_lock<std::mutex> lk(mx);
+	std::unique_lock<std::mutex> lk(_mx);
 	data_cond.wait(lk, [this] {return !deque.empty();});
 	val = deque.front();
 	deque.pop_front();
@@ -101,7 +108,7 @@ void ThreadSafeQueue<T>::wait_and_pop_front(T & val) {
 
 template <typename T>
 std::shared_ptr<T> ThreadSafeQueue<T>::wait_and_pop_front() {
-	std::unique_lock<std::mutex> lk(mx);
+	std::unique_lock<std::mutex> lk(_mx);
 	data_cond.wait(lk, [this] {return !deque.empty();});
 	std::shared_ptr<T> res(std::make_shared<T> (deque.front()));
 	deque.pop_front();
@@ -110,13 +117,13 @@ std::shared_ptr<T> ThreadSafeQueue<T>::wait_and_pop_front() {
 
 template <typename T>
 bool ThreadSafeQueue<T>::empty() const {
-	std::lock_guard<std::mutex> lk(mx);
+	std::lock_guard<std::mutex> lk(_mx);
 	return deque.empty();
 }
 
 template <typename T>
 bool ThreadSafeQueue<T>::try_pop_back(T & val) {
-	std::lock_guard<std::mutex> lk(mx);
+	std::lock_guard<std::mutex> lk(_mx);
 	if (deque.empty())
 		return false;
 	val = deque.pop_back();
@@ -126,7 +133,7 @@ bool ThreadSafeQueue<T>::try_pop_back(T & val) {
 
 template <typename T>
 std::shared_ptr<T> ThreadSafeQueue<T>::try_pop_back() {
-	std::lock_guard<std::mutex> lk(mx);
+	std::lock_guard<std::mutex> lk(_mx);
 	if (deque.empty())
 		return std::shared_ptr<T>();
 	std::shared_ptr<T> res(std::make_shared<T>(deque.back()));
@@ -136,7 +143,7 @@ std::shared_ptr<T> ThreadSafeQueue<T>::try_pop_back() {
 
 template <typename T>
 bool ThreadSafeQueue<T>::try_pop_front(T & val) {
-	std::lock_guard<std::mutex> lk(mx);
+	std::lock_guard<std::mutex> lk(_mx);
 	if (deque.empty())
 		return false;
 	val = deque.pop_front();
@@ -146,7 +153,7 @@ bool ThreadSafeQueue<T>::try_pop_front(T & val) {
 
 template <typename T>
 std::shared_ptr<T> ThreadSafeQueue<T>::try_pop_front() {
-	std::lock_guard<std::mutex> lk(mx);
+	std::lock_guard<std::mutex> lk(_mx);
 	if (deque.empty())
 		return std::shared_ptr<T>();
 	std::shared_ptr<T> res(std::make_shared<T>(deque.front()));
