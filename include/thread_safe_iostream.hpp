@@ -15,7 +15,7 @@ class ThreadSafeIOStream
 
 	public: // ostream
 		template <typename T>
-		ThreadSafeIOStream & operator <<(T & obj);
+		ThreadSafeIOStream & operator <<(const T & obj);
 		ThreadSafeIOStream & operator <<(std::ostream& (*pf)(std::ostream&));
 
 	public: // istream
@@ -30,4 +30,4 @@ class ThreadSafeIOStream
 		void flush(void);
 };
 
-extern ThreadSafeIOStream threadSafeCout;
+extern thread_local ThreadSafeIOStream threadSafeCout;
