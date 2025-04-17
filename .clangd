@@ -1,0 +1,5 @@
+CompileFlags:
+  Add: [
+    "-I/home/bento/Coding/42/libftpp/include"
+  ]
+
