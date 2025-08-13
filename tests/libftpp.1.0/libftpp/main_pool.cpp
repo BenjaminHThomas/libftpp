@@ -19,7 +19,7 @@ int main() {
     myPool.resize(5);
 
     // Acquire an object from the pool
-    Pool<TestObject>::Object obj1 = myPool.acquire(15);
+    Pool<TestObject>::Object obj1 = myPool.acquire();
     obj1->sayHello();  // Should output: "Hello from TestObject"
 
     {
